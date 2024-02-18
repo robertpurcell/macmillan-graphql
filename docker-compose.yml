@@ -1,0 +1,69 @@
+version: "3.9"
+services:
+  gateway-api:
+    build:
+      context: .
+      dockerfile: ./Macmillan.GraphQL.Gateway/Dockerfile
+    entrypoint: /bin/sh -c "update-ca-certificates && dotnet Macmillan.GraphQL.Gateway.dll"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:7000
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=password
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+    ports:
+      - "7000:7000"
+    volumes:
+      - ~/.aspnet/https:/https:ro
+  account-api:
+    build:
+      context: .
+      dockerfile: ./Macmillan.GraphQL.Account/Dockerfile
+    entrypoint: /bin/sh -c "update-ca-certificates && dotnet Macmillan.GraphQL.Account.dll"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:7001
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=password
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+      - CONNECTIONSTRINGS__DEFAULTCONNECTION=DataSource=app.db;Cache=Shared;
+    ports:
+      - "7001:7001"
+    volumes:
+      - ~/.aspnet/https:/https:ro
+  consent-api:
+    build:
+      context: .
+      dockerfile: ./Macmillan.GraphQL.Consent/Dockerfile
+    depends_on:
+      - mongodb
+    entrypoint: /bin/sh -c "update-ca-certificates && dotnet Macmillan.GraphQL.Consent.dll"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:7002
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=password
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+      - MONGODBCONFIGURATION__ConnectionString=mongodb://mongodb:27017
+      - MONGODBCONFIGURATION__Database=consentdb
+    ports:
+      - "7002:7002"
+    volumes:
+      - ~/.aspnet/https:/https:ro
+  sitecore-api:
+    build:
+      context: .
+      dockerfile: ./Macmillan.GraphQL.Sitecore/Dockerfile
+    entrypoint: /bin/sh -c "update-ca-certificates && dotnet Macmillan.GraphQL.Sitecore.dll"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:7003
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=password
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+    ports:
+      - "7003:7003"
+    volumes:
+      - ~/.aspnet/https:/https:ro
+  mongodb:
+    image: mongo
+    restart: always
+volumes:
+  db:
+  dbdata6:

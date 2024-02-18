@@ -1,0 +1,3 @@
+extend type User {
+  consent: CustomerConsent @delegate(schema:"consent", path: "consentByEmail(email: $fields:email)")
+}
